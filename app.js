@@ -1,6 +1,9 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const feed = require('./routes/FeedRouter');
+const mongoose = require('mongoose');
+
+const dbUrl = 'mongodb+srv://alitarek:0000@cluster0.yt1qvle.mongodb.net/socialNetworkingBlog?retryWrites=true&w=majority'
 
 const app = express()
 
@@ -15,4 +18,6 @@ app.use((req, res, next) => {
 
 app.use(feed);
 
-app.listen(8080);
+mongoose.connect(dbUrl).then(() => {
+    app.listen(8080);
+});
