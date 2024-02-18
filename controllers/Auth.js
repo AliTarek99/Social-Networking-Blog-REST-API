@@ -24,7 +24,7 @@ exports.login = (req, res, next) => {
 
 exports.signup = (req, res, next) => {
     let err = validationResult(req);
-    if(err) {
+    if(!err.isEmpty) {
         let error = new Error('Validation Error');
         error.statusCode = 422;
         error.data = err.array();
@@ -35,7 +35,7 @@ exports.signup = (req, res, next) => {
     user.name = req.body.name;
     if(req.file)
         user.picture = req.file.path;
-    bcrypt.hash(req.body.password)
+    bcrypt.hash(req.body.password, 12)
     .then(value => {
         user.password = value;
         return user.save();

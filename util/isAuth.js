@@ -1,9 +1,9 @@
 const jwt = require('jsonwebtoken');
 const Users = require('../models/Users');
 
-module.exports = (req, res, next) => {
-    if(req.get('Authorzation')) {
-        const token = req.get('Authorization').slice(' ')[1];
+exports.isAuth = (req, res, next) => {
+    if(req.get('Authorization')) {
+        const token = req.get('Authorization').split(' ')[1];
         let decodedToken;
         try{
             decodedToken = jwt.verify(token, '12jijja9s204qwepoi129gsn');
@@ -15,15 +15,23 @@ module.exports = (req, res, next) => {
             error.statusCode = 401;
             throw error;
         }
-        Users.findById(decodedToken.userId)
-        .then(user => {
-            if(!user) {
-                let error = new Error('Not valid token.');
-                error.statusCode = 401;
-                throw error;
-            }
-            req.user = user;
-            next();
-        }).catch(err => next(err));
+        req.userId = decodedToken.userId;
+        next();
+    }
+}
+
+exports.decode = req => {
+    if(req.get('Authorzation')) {
+        const token = req.get('Authorization').slice(' ')[1];
+        let decodedToken;
+        try{
+            decodedToken = jwt.verify(token, '12jijja9s204qwepoi129gsn');
+        }catch(err) {
+            return undefined;
+        }
+        if(!decodedToken) {
+            return undefined;
+        }
+        return decodedToken;
     }
 }
