@@ -33,11 +33,13 @@ exports.signup = (req, res, next) => {
     let user = new Users();
     user.email = req.body.email;
     user.name = req.body.name;
+    user.status = "";
     if(req.file)
         user.picture = req.file.path;
     bcrypt.hash(req.body.password, 12)
     .then(value => {
         user.password = value;
         return user.save();
-    }).catch(err => next(err));
+    }).then(result =>  res.status(201).json({ message: 'User created!', userId: result._id }))
+    .catch(err => next(err));
 }

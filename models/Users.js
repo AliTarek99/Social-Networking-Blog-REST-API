@@ -17,6 +17,9 @@ const Users = new Schema({
     },
     picture: {
         type: String
+    },
+    status: {
+        type: String
     }
 });
 

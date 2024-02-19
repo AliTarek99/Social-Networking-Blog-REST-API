@@ -16,9 +16,9 @@ app.use(bodyParser.json());
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         if(req.body.title)
-            cb(null, path.join('Data', 'postImages'));
+            cb(null, path.join('data', 'postImages'));
         else if(req.body.email) {
-            cb(null, path.join('Data', 'profilePic'));
+            cb(null, path.join('data', 'profilePic'));
         }
     },
     filename: function (req, file, cb) {
@@ -43,12 +43,13 @@ const upload = multer({
     }
 }).single('image');
 
-app.use('data/postImages', (req, res, next) => {
+app.use(upload)
+app.use('/data/postImages/', (req, res, next) => {
     res.setHeader('Content-Type', 'image/png');
     next();
 }, express.static(path.join('data', 'postImages')));
 
-app.use('data/profilePics', (req, res, next) => {
+app.use('/data/profilePics', (req, res, next) => {
     res.setHeader('Content-Type', 'image/png');
     next();
 }, express.static(path.join('data', 'profilePics')));
