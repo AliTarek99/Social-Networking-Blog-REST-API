@@ -1,7 +1,7 @@
 const { url } = require('inspector');
 const Posts = require('../models/Posts');
 const Users = require('../models/Users');
-const fs = require('fs');
+const deleteImage = require('../util/filesHelper').deleteImage;
 
 const MAX_POSTS_IN_PAGE = 5;
 
@@ -14,7 +14,7 @@ exports.getHome = (req, res, next) => {
         .skip((page - 1) * MAX_POSTS_IN_PAGE)
         .populate('creator')
         .then(posts => {
-            posts.forEach(value => value.creator.password = value.creator.email = undefined);
+            posts.forEach(value => value.creator = {name: value.creator.name, picture: value.creator.picture, status: value.creator.status});
             res.status(200).json({
                 posts: posts,
                 totalItems: count,
@@ -48,7 +48,7 @@ exports.createPost = (req, res, next) => {
         return Users.findById(p.creator);
     }).then(creator => {
         post.id = post._id.toString();
-        res.status(201).json({message: 'Post created!', post: post, creator: {_id: creator._id, name: creator.name}});
+        res.status(201).json({message: 'Post created!', post: post, creator: {name: creator.name}});
     }).catch(err => next(err));
 };
 
@@ -111,16 +111,10 @@ exports.editStatus = (req, res, next) => {
             error.statusCode = 403;
             throw error;
         }
-        console.log(req.body);
         if(req.body.status)
             user.status = req.body.status;
         return user.save();
     }).then(user => {
         res.status(201).json({status: user.status})
     }).catch(err => next(err));
-}
-
-const deleteImage = url => {
-    if(url)
-        fs.rm(url, err => console.log(err));
 }

@@ -21,17 +21,14 @@ exports.isAuth = (req, res, next) => {
 }
 
 exports.decode = req => {
-    if(req.get('Authorzation')) {
-        const token = req.get('Authorization').slice(' ')[1];
+    if(req.get('Authorization')) {
+        const token = req.get('Authorization').split(' ')[1];
         let decodedToken;
         try{
             decodedToken = jwt.verify(token, '12jijja9s204qwepoi129gsn');
         }catch(err) {
             return undefined;
         }
-        if(!decodedToken) {
-            return undefined;
-        }
-        return decodedToken;
+        return req.userId = decodedToken.userId;
     }
 }

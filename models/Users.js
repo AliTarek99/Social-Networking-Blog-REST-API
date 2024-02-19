@@ -20,7 +20,16 @@ const Users = new Schema({
     },
     status: {
         type: String
-    }
+    },
+    passResetToken: {
+        type: String
+    },
+    verificationToken: {
+        type: String
+    },
+    resetExpiry: {
+        type: Date
+    },
 });
 
 module.exports = mongoose.model('Users', Users);

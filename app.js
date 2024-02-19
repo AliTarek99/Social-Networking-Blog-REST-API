@@ -2,6 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const feed = require('./routes/FeedRouter');
 const auth = require('./routes/AuthRouter');
+const profile = require('./routes/ProfileRouter');
 const mongoose = require('mongoose');
 const path = require('path');
 const multer = require('multer');
@@ -15,18 +16,18 @@ const app = express();
 app.use(bodyParser.json());
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        if(req.body.title)
+        if(req.url.split('/')[1] == 'feed')
             cb(null, path.join('data', 'postImages'));
-        else if(req.body.email) {
-            cb(null, path.join('data', 'profilePic'));
+        else {
+            cb(null, path.join('data', 'profilePics'));
         }
     },
     filename: function (req, file, cb) {
-        if(req.body.title)
+        if(req.url.split('/')[1] == 'feed')
             cb(null, `${new Date().getTime()}-${file.originalname}`);
-        else if(req.body.email) {
+        else {
             if(jwtHelper.decode(req))
-                cb(null, req.userId);
+                cb(null, req.userId + '.' + file.mimetype.split('/')[1]);
             else
                 cb(new Error('Not authorized!'));
         }
@@ -63,6 +64,7 @@ app.use((req, res, next) => {
 
 app.use('/feed', feed);
 app.use('/auth', auth);
+app.use('/profile', profile);
 
 app.use((error, req, res, next) => {
     console.log(error);

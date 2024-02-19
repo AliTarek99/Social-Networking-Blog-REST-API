@@ -5,7 +5,7 @@ const Users = require('../models/Users');
 
 const router = express.Router();
 
-router.post('/login', authController.login);
+router.post('/login', check('password').trim(), authController.login);
 
 router.put('/signup', [
     check('email').isEmail().withMessage('Not a valid email'),
@@ -19,5 +19,11 @@ router.put('/signup', [
     }),
     check('name').trim().notEmpty()
 ], authController.signup);
+
+router.post('/send-email', authController.passResetEmail);
+
+router.get('/change-password/:token', authController.checkPassToken);
+
+router.patch('/change-password/:token', check('password').trim().isLength({min: 5}), authController.editPassword);
 
 module.exports = router;
