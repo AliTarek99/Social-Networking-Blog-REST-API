@@ -7,6 +7,6 @@ const router = express.Router();
 
 router.get('/', jwtHelper.isAuth, profileController.getProfile);
 
-router.put('/picture', jwtHelper.isAuth, profileController.setProfilePic);
+router.patch('/edit-profile', jwtHelper.isAuth, profileController.editProfile);
 
 module.exports = router;

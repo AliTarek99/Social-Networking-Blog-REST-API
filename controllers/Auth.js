@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const { validationResult } = require('express-validator')
 const bcrypt = require('bcrypt');
-const crypto = require('node:crypto');
+const crypto = require('crypto');
 
 
 //mailjet apikeys
@@ -33,7 +33,7 @@ exports.login = (req, res, next) => {
 
 exports.signup = (req, res, next) => {
     let err = validationResult(req);
-    if(!err.isEmpty) {
+    if(!err.isEmpty()) {
         let error = new Error('Validation Error');
         error.statusCode = 422;
         error.data = err.array();
@@ -53,7 +53,7 @@ exports.signup = (req, res, next) => {
             if(err) {
                 throw err;
             }
-            buff = buff.toString();
+            buff = buff.toString('hex');
             user.verificationToken = buff;
             user.save();
             sendEmail({
@@ -84,7 +84,7 @@ exports.verifyEmail = (req, res, next) => {
 }
 
 exports.passResetEmail = (req, res, next) => {
-    Users.findById(req.body.email)
+    Users.findOne({email: req.body.email})
     .then(user => {
         res.status(200).json({message: 'If email exists you will receive an email with password change link.'});
         if(user && !user.verificationToken) {
@@ -92,16 +92,16 @@ exports.passResetEmail = (req, res, next) => {
                 if(err) {
                     throw err;
                 }
-                buff = buff.toString();
+                buff = buff.toString('hex');
                 user.passResetToken = buff;
-                user.resetExpiry = new Date() + 3600000;
+                user.resetExpiry = Date.now() + 3600000;
                 user.save();
                 sendEmail({
                     subject: "Password reset.",
                     text: "If you requested to reset your password click here and if it was not you just ignore this email.\n" +
                         "Note: this link expires after an hour.",
-                    html: `<p>If you requested to reset your password click <a href="${req.protocol}://${req.get('host')}/auth/change-password/${buff}">here</a> and if it was not you just ignore this email.</p>
-                        <p>Note: this link expires after an hour.</p>`
+                    html: `<p>If you requested to reset your password click <a href="${req.protocol}://${req.get('host')}/auth/change-password/${buff}">here</a> 
+                        and if it was not you just ignore this email. Note: this link expires after an hour.</p>`
                 }, {
                     email: user.email,
                     name: user.name
@@ -119,7 +119,7 @@ exports.checkPassToken = (req, res, next) => {
             error.statusCode = 404;
             throw error;
         }
-        res.statusCode(200).json({token: user.passResetToken})
+        res.status(200).json({verified: true});
     }).catch(err => next(err));
 }
 
@@ -141,15 +141,14 @@ exports.editPassword = (req, res, next) => {
         crypto.randomBytes(32, (err, buff) => {
             if(err)
                 throw err;
-            user.passResetToken = buff;
-            user.resetExpiry = new Date() + 3600000;
+            user.passResetToken = buff.toString('hex');
+            user.resetExpiry = Date.now() + 3600000;
             user.save();
-            buff = buff.toString();
             sendEmail({
                 subject: "Password changed!",
                 text: "Password changed successfully. if it was not you click here to change the password.\n This link expires after 1 hour",
                 html: `<p>Password changed successfully. if it was not you click <a href="${req.protocol}://${req.get('host')}/auth/change-password/${buff}">here</a> to change the password.
-                    This link expires after 1 hour</p>`
+                    This link expires after 1 hour.</p>`
             }, {
                 email: user.email,
                 name: user.name
@@ -166,21 +165,21 @@ const sendEmail = (message, to) => {
     mailjet
     .post('send', {version: 'v3.1'})
     .request({
-        "Message": [
+        Messages: [
             {
-                "From": {
-                    "Email": "alitarek5120@gmail.com",
-                    "Name": "Blog Post"
+                From: {
+                    Email: "alitarek5120@gmail.com",
+                    Name: "Blog Post"
                 },
-                "To": [
+                To: [
                     {
-                        "Email": to.email,
-                        "Name": to.name
+                        Email: to.email,
+                        Name: to.name
                     }
                 ],
-                "Subject": message.subject,
-                "TextPart": message.text,
-                "HtmlPart": message.html
+                Subject: message.subject,
+                TextPart: message.text,
+                HtmlPart: message.html
             }
         ]
     }).then(result => {

@@ -20,6 +20,8 @@ router.put('/signup', [
     check('name').trim().notEmpty()
 ], authController.signup);
 
+router.get('/verify/:token', authController.verifyEmail);
+
 router.post('/send-email', authController.passResetEmail);
 
 router.get('/change-password/:token', authController.checkPassToken);
