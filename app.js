@@ -22,15 +22,16 @@ const storage = multer.diskStorage({
             cb(null, path.join('data', 'profilePics'));
         }
     },
-    filename: function (req, file, cb) {
-        if(req.url.split('/')[1] == 'feed')
-            cb(null, `${new Date().getTime()}-${file.originalname}`);
-        else {
-            if(jwtHelper.decode(req))
-                cb(null, req.userId + '.' + file.mimetype.split('/')[1]);
+    filename: async function (req, file, cb) {
+        let userId = await jwtHelper.decode(req);
+        if(userId) {
+            if(req.url.split('/')[1] == 'feed')
+                cb(null, `${new Date().getTime()}-${file.originalname}`);
             else
-                cb(new Error('Not authorized!'));
+                cb(null, req.userId + '.' + file.mimetype.split('/')[1]);
         }
+        else
+            cb(new Error('Not authorized!'));
     },
 })
 
@@ -67,7 +68,6 @@ app.use('/auth', auth);
 app.use('/profile', profile);
 
 app.use((error, req, res, next) => {
-    console.log(error);
     error.statusCode = error.statusCode || 500;
     res.status(error.statusCode).json({ message: error.message, data: error.data });
 })

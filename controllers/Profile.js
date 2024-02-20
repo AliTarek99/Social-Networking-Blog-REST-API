@@ -5,8 +5,8 @@ exports.getProfile = (req, res, next) => {
     Users.findById(req.userId)
     .then(user => {
         if(!user) {
-            let error = new Error('Not Authorized!')
-            error.statusCode = 401;
+            let error = new Error('Not found!')
+            error.statusCode = 404;
             throw error;
         }
         res.status(200).json({
@@ -22,6 +22,11 @@ exports.getProfile = (req, res, next) => {
 exports.editProfile = (req, res, next) => {
     Users.findById(req.userId)
     .then(user => {
+        if(!user) {
+            let error = new Error('Not found!')
+            error.statusCode = 404;
+            throw error;
+        }
         if(req.file) {
             fileHelper.deleteImage(user.picture);
             user.picture = req.file.path;
@@ -37,5 +42,5 @@ exports.editProfile = (req, res, next) => {
             status: user.status,
             imageUrl: user.picture
         });
-    }).catch(err => console.log(err));
+    }).catch(err => next(err));
 }

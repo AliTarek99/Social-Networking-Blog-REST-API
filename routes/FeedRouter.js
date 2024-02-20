@@ -4,7 +4,7 @@ const jwtHelper = require('../util/isAuth');
 
 const router = express.Router();
 
-router.get('/posts', jwtHelper.isAuth, feedController.getHome);
+router.get('/posts', feedController.getHome);
 
 router.get('/status', jwtHelper.isAuth, feedController.getStatus);
 

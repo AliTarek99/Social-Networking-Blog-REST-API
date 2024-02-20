@@ -15,8 +15,22 @@ exports.isAuth = (req, res, next) => {
             error.statusCode = 401;
             throw error;
         }
-        req.userId = decodedToken.userId;
-        next();
+        if(req.url != '/profile/' || req.url != '/profile') {
+            Users.findById(decodedToken.userId)
+            .then(user => {
+                if(!user || user.verificationToken) {
+                    let error = new Error('Account is not verified.');
+                    error.statusCode = 401;
+                    throw error;
+                }
+                req.userId = decodedToken.userId;
+                next();
+            }).catch(err => next(err));
+        }
+        else {
+            req.userId = decodedToken.userId;
+            next();
+        }
     }
 }
 
@@ -29,6 +43,12 @@ exports.decode = req => {
         }catch(err) {
             return undefined;
         }
-        return req.userId = decodedToken.userId;
+        return Users.findById(decodedToken.userId)
+        .then(user => {
+            if(!user || user.verificationToken) {
+                return null;
+            }
+            return req.userId = decodedToken.userId;
+        }).catch(err => next(err));
     }
 }
