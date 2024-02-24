@@ -9,7 +9,7 @@ const multer = require('multer');
 const jwtHelper = require('./util/isAuth');
 
 
-const dbUrl = 'mongodb+srv://alitarek:0000@cluster0.yt1qvle.mongodb.net/socialNetworkingBlog?retryWrites=true&w=majority';
+const dbUrl = "Your collection's Link";
 
 const app = express();
 
